@@ -1,11 +1,43 @@
 <script>
-  
+  console.log('PAGE SCRIPT LOADED');
+  import { onMount } from 'svelte';
+
   let infos = [];
   let firstName = '';
   let lastName = '';
   let age = '';
   let edit = null;
   let uniqueId = 0;
+let mounted = false;
+
+  // Load from localStorage (browser only)
+  onMount(() => {
+    console.log('ON MOUNT FIRED');
+    const stored = localStorage.getItem('crud-infos');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          infos = parsed;
+
+          // keep IDs unique after refresh
+          const maxId = infos.reduce(
+            (max, info) => Math.max(max, info.uniqueId),
+            0
+          );
+          uniqueId = maxId;
+        }
+      } catch (err) {
+        console.error('Failed to load localStorage', err);
+      }
+    }
+    mounted = true;
+  });
+
+  // Save whenever infos changes (browser only)
+  $: if (mounted) {
+    localStorage.setItem('crud-infos', JSON.stringify(infos));
+  }
 
   function newUniqueID(){
     uniqueId ++;
